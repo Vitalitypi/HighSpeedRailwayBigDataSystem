@@ -8,6 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yonggewang/bdls/blockchain/train"
+	"github.com/yonggewang/bdls/blockchain/user"
+	"github.com/yonggewang/bdls/global"
 	"log"
 	"math/big"
 	"net"
@@ -28,6 +31,17 @@ type Quorum struct {
 var Id int
 
 func main() {
+	bytes, err := hex.DecodeString("73ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d")
+	global.MyError(err)
+	global.PublicKey = bytes
+	global.AddressString = hex.EncodeToString(global.GetAddress(bytes))
+	global.PortId = "3000"
+	chainUser := user.CreateBlockChainUser()
+	chainUser.DB.Close()
+	chainTrain := train.CreateBlockChainTrain()
+	chainTrain.DB.Close()
+}
+func main1() {
 	app := &cli.App{
 		Name:                 "BDLS consensus protocol emulator",
 		Usage:                "Generate quorum then emulate participants",
