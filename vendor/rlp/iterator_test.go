@@ -19,7 +19,7 @@ package rlp
 import (
 	"testing"
 
-	"publicChain/SaveNode/common/hexutil"
+	"common/hexutil"
 )
 
 // TestIterator tests some basic things about the ListIterator. A more

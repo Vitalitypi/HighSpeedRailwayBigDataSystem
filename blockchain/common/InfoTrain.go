@@ -14,11 +14,11 @@ import (
 )
 
 type InfoTrain struct {
-	Hash      []byte   //证书编号
+	Hash      []byte   //列车编号
 	PublicKey []byte   //公钥
 	Signature []byte   //数字签名
-	CtName    string   //证书名称
-	UserName  []string //证书人员姓名
+	CtName    string   //列车名称
+	UserName  []string //列车人员姓名
 	//RipeMd160Hash []byte
 	Time  string //时间
 	Other string //其他信息
@@ -43,7 +43,7 @@ func GetStringInfoTrain(infoBytes []byte) string {
 	for _, name := range info.UserName {
 		userNames += name
 	}
-	result := "\n证书信息：|||公钥：" + hex.EncodeToString(info.PublicKey) + "\n|||签名：" + hex.EncodeToString(info.Signature) + "" +
+	result := "\n列车信息：|||公钥：" + hex.EncodeToString(info.PublicKey) + "\n|||签名：" + hex.EncodeToString(info.Signature) + "" +
 		"\n|||Hash:" + hex.EncodeToString(info.Hash) +
 		"\n|||作品名称：" + info.CtName +
 		"\n|||作者：" + userNames +
@@ -52,10 +52,10 @@ func GetStringInfoTrain(infoBytes []byte) string {
 	return result
 }
 func (info *InfoTrain) PrintInfoTrain() {
-	fmt.Printf("当前证书信息hash：%x\n", info.Hash)
-	fmt.Printf("当前证书信息公钥：%x\n", info.PublicKey)
-	fmt.Printf("当前证书信息数字签名：%x\n", info.Signature)
-	fmt.Println("证书名称：", info.CtName)
+	fmt.Printf("当前列车信息hash：%x\n", info.Hash)
+	fmt.Printf("当前列车信息公钥：%x\n", info.PublicKey)
+	fmt.Printf("当前列车信息数字签名：%x\n", info.Signature)
+	fmt.Println("列车名称：", info.CtName)
 	fmt.Println("获奖人员姓名：", info.UserName)
 	fmt.Println("时间：", info.Time)
 	fmt.Println("其他信息：", info.Other)
@@ -85,7 +85,7 @@ func (info *InfoTrain) IsCoinBaseCertificate() bool {
 	return info.Time == "" && info.CtName == ""
 }
 
-//获取证书的hash值
+//获取列车的hash值
 func (info *InfoTrain) HashInfoTrain() []byte {
 	var hash [32]byte
 	Copy := *info

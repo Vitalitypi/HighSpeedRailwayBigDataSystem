@@ -19,7 +19,7 @@ package rlp_test
 import (
 	"bytes"
 	"fmt"
-	"publicChain/SaveNode/rlp"
+	"rlp"
 )
 
 func ExampleEncoderBuffer() {

@@ -53,7 +53,7 @@ func (blockchain *BlockChain_Train) SetBlockChainBytes(blockchainBytes *global.B
 		return nil
 	})
 	global.MyError(err)
-	//global.LabelTip.SetText(global.MyNode + "证书链区块同步完成!")
+	//global.LabelTip.SetText(global.MyNode + "列车链区块同步完成!")
 }
 func (blockchain *BlockChain_Train) GetBlocksAboveHeight(height uint64) *global.BlockChainTrainData {
 	var headerBytesArr [][]byte
@@ -114,7 +114,7 @@ func SetGenesisBlock(genesisBlockBytes [][]byte, infoBytes []byte) *BlockChain_T
 			//将区块体存储到表
 			err = b.Put(genesisHeader.BlockBodyHashTrain, genesisBlockBytes[1])
 			global.MyError(err)
-			//存储证书hash-证书信息
+			//存储列车hash-列车信息
 			info := common.DeserializeInfoTrain(infoBytes)
 			err = b.Put(info.Hash, infoBytes)
 			global.MyError(err)
@@ -125,12 +125,12 @@ func SetGenesisBlock(genesisBlockBytes [][]byte, infoBytes []byte) *BlockChain_T
 		}
 		return nil
 	})
-	fmt.Println("证书区块链已设置...")
+	fmt.Println("列车区块链已设置...")
 	global.MyError(err)
 	return &BlockChain_Train{headerHash, db}
 }
 func (blockchain *BlockChain_Train) GetGenesisBlock() ([]byte, []byte, []byte) {
-	//返回区块头字节数组、区块体字节数组、证书信息字节数组
+	//返回区块头字节数组、区块体字节数组、列车信息字节数组
 	var headerBytes, bodyBytes, infoBytes []byte
 	err := blockchain.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(global.TableName))
@@ -176,11 +176,11 @@ func (blockchain *BlockChain_Train) QueryNodeTrainRootHash(rootHash []byte) [][]
 		b := tx.Bucket([]byte(global.TableName))
 		if b != nil {
 			for len(rootHash) != 0 {
-				//获取证书节点字节
+				//获取列车节点字节
 				nodeTrainBytes := b.Get(rootHash)
 				fmt.Println("rootHash:\n", rootHash)
 				nodeTrain := common.DeserializeNodeTrain(nodeTrainBytes)
-				//获取证书信息字节
+				//获取列车信息字节
 				for _, hash := range nodeTrain.TrainInfoHash {
 					TrainInfoBytes := b.Get(hash)
 					infos = append(infos, TrainInfoBytes)
@@ -232,13 +232,13 @@ func (blockchain *BlockChain_Train) PrintBlockChain_Train() {
 				bodyBytes := b.Get(header.BlockBodyHashTrain)
 				body = DeserializeBlockBody(bodyBytes)
 				header.PrintTrainHeader()
-				fmt.Println("===========\n开始打印证书区块体")
+				fmt.Println("===========\n开始打印列车区块体")
 				for _, info := range body.InfoHash {
 					infoBytes := b.Get(info)
 					TrainInfo := common.DeserializeInfoTrain(infoBytes)
 					TrainInfo.PrintInfoTrain()
 				}
-				fmt.Println("证书区块体打印完毕\n===========")
+				fmt.Println("列车区块体打印完毕\n===========")
 			}
 			return nil
 		})
@@ -270,7 +270,7 @@ func AddBlock() {
 	//清空相关变量
 	NewHeaderTrain = nil
 	NewBodyTrain = nil
-	fmt.Println("证书链区块添加成功...")
+	fmt.Println("列车链区块添加成功...")
 }
 
 func (blockchain *BlockChain_Train) GetHeight() uint64 {
@@ -311,7 +311,7 @@ func (blockchain *BlockChain_Train) GetLowHeight() uint64 {
 	return height
 }
 
-func CreateBlockChain_Train() *BlockChain_Train {
+func CreateBlockChainTrain() *BlockChain_Train {
 	dbName := fmt.Sprintf(global.DBName, global.PortId)
 	var headerHash []byte
 	log.Print("Create Train BlockChain...")
@@ -335,7 +335,7 @@ func CreateBlockChain_Train() *BlockChain_Train {
 			//将区块体存储到表
 			err = b.Put(genesisHeader.BlockBodyHashTrain, genesisBody.SerializeBlockBody())
 			global.MyError(err)
-			//string(证书Hash)与证书信息的映射
+			//string(列车Hash)与列车信息的映射
 			//fmt.Println(Map_InfoTrain)
 			for _, v := range common.Map_InfoTrain {
 				err = b.Put(v.Hash, v.SerializeInfoTrain())
@@ -350,7 +350,7 @@ func CreateBlockChain_Train() *BlockChain_Train {
 		}
 		return nil
 	})
-	fmt.Println("证书区块链已创建...")
+	fmt.Println("列车区块链已创建...")
 	global.MyError(err)
 	return &BlockChain_Train{headerHash, db}
 }
@@ -420,7 +420,7 @@ func (blockchain *BlockChain_Train) AddBlockToBlockChain(header *Block_Header_Tr
 					fmt.Println("TrainInfoHash verify error!")
 				}
 			}
-			////清空全局变量：证书信息
+			////清空全局变量：列车信息
 			//common.Map_InfoTrain =make(map[string]*common.InfoTrain)
 			//更新最近的区块hash
 			err = b.Put([]byte(global.RecentBlockName_Train), header.Hash)
@@ -432,7 +432,7 @@ func (blockchain *BlockChain_Train) AddBlockToBlockChain(header *Block_Header_Tr
 		return nil
 	})
 	global.MyError(err)
-	fmt.Println("证书数据已写入区块链...")
+	fmt.Println("列车数据已写入区块链...")
 }
 func (blockchain *BlockChain_Train) VerifyTrainInfo(info *common.InfoTrain) bool {
 	return info.Verify()

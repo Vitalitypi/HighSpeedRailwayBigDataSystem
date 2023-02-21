@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
-	"publicChain/SaveNode/rlp/internal/rlpstruct"
+	"rlp/internal/rlpstruct"
 	"reflect"
 	"strings"
 	"sync"

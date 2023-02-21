@@ -6,7 +6,7 @@ package structure
 type BlockGenesis struct {
 	BlockUser  [][]byte //用户区块
 	BlockTrain [][]byte //客运区块
-	InfoTrain  []byte   //创世区块证书信息
+	InfoTrain  []byte   //创世区块列车信息
 	InfoUser   []byte   //用户信息字节
 	NodeUser   []byte   //用户节点字节
 }

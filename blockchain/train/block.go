@@ -75,10 +75,10 @@ func DeserializeBlockBody(bytes []byte) *Block_Body_Train {
 //	return hash[:]
 //}
 func (header *Block_Header_Train) PrintTrainHeader() {
-	fmt.Println("证书区块链高度：", header.Height)
-	fmt.Printf("证书区块链Qc:%x\n", header.Qc)
+	fmt.Println("列车区块链高度：", header.Height)
+	fmt.Printf("列车区块链Qc:%x\n", header.Qc)
 	fmt.Printf("上一区块hash：%x\n", header.PreviousHash)
-	fmt.Printf("证书区块体根hash：%x\n", header.BlockBodyHashTrain)
+	fmt.Printf("列车区块体根hash：%x\n", header.BlockBodyHashTrain)
 	fmt.Printf("TimeStamp:%s\n", time.Unix(int64(header.TimeStamp), 0).Format("2006-01-02 03:04:05 PM"))
 	fmt.Printf("当前区块hash：%x\n", header.Hash)
 	fmt.Println("Nounce:", header.Nonce)

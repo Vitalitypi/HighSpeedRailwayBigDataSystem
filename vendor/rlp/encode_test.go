@@ -27,7 +27,7 @@ import (
 	"sync"
 	"testing"
 
-	"publicChain/SaveNode/common/math"
+	"common/math"
 )
 
 type testEncoder struct {

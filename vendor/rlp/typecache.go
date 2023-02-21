@@ -22,7 +22,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"publicChain/SaveNode/rlp/internal/rlpstruct"
+	"rlp/internal/rlpstruct"
 )
 
 // typeinfo is an entry in the type cache.

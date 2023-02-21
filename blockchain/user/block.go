@@ -18,8 +18,8 @@ func (body *Block_Body_User) PrintBodyUser() {
 	fmt.Printf("Body NodeHashUsers :%x", body.NodeHashUsers)
 }
 func (header *Block_Header_User) PrintUserHeader() {
-	fmt.Println("证书区块链高度：", header.Height)
-	fmt.Printf("证书区块链Qc:%x\n", header.Qc)
+	fmt.Println("列车区块链高度：", header.Height)
+	fmt.Printf("列车区块链Qc:%x\n", header.Qc)
 	fmt.Printf("上一区块hash：%x\n", header.PreviousHash)
 	fmt.Printf("用户节点根hash：%x\n", header.BlockBodyHashUser)
 	fmt.Printf("TimeStamp:%s\n", time.Unix(int64(header.TimeStamp), 0).Format("2006-01-02 03:04:05 PM"))

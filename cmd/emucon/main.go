@@ -30,7 +30,7 @@ type Quorum struct {
 
 var Id int
 
-func main() {
+func genesisBlock() {
 	bytes, err := hex.DecodeString("73ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d")
 	global.MyError(err)
 	global.PublicKey = bytes
@@ -41,7 +41,7 @@ func main() {
 	chainTrain := train.CreateBlockChainTrain()
 	chainTrain.DB.Close()
 }
-func main1() {
+func main() {
 	app := &cli.App{
 		Name:                 "BDLS consensus protocol emulator",
 		Usage:                "Generate quorum then emulate participants",

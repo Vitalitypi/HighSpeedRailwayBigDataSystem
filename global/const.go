@@ -5,7 +5,7 @@ const AddressChecksumLen = 4
 
 const CmdLength = 12
 const Version = 1
-const DBName = "HSRBDS_%s.db"
+const DBName = "./db/HSRBDS_%s.db"
 const TableName = "blockchain"
 
 const Protocol = "tcp"

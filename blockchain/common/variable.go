@@ -6,11 +6,10 @@ var Map_UserInfo = make(map[string]*InfoUser) //用户信息
 //用户信息池
 var UserInfoPool = []*InfoUser{}
 
-//string(证书信息的hash)与证书信息的map
+//string(列车信息的hash)与列车信息的map
 var Map_InfoTrain = make(map[string]*InfoTrain)
 
-//var Map_CertificateInfo_Buff=make()
 //存储区块链的指针
 
-//证书信息池
+//列车信息池
 var InfoTrainPool = []*InfoTrain{}

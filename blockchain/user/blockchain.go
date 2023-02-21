@@ -127,7 +127,7 @@ func (blockchain *BlockChain_User) GetBlocksAboveHeight(height uint64) *global.B
 						userInfoBytesArr = append(userInfoBytesArr, userInfoBytes)
 					}
 					if len(nodeUser.NodeTrainRootHash) != 0 {
-						//获取证书节点
+						//获取列车节点
 						nodeTrainByte := b.Get(nodeUser.NodeTrainRootHash)
 						nodeTrainBytes = append(nodeTrainBytes, nodeTrainByte)
 						nodeTrain := common.DeserializeNodeTrain(nodeTrainByte)
@@ -310,12 +310,12 @@ func (blockchain *BlockChain_User) QueryUser(pubKey []byte) ([]byte, []byte, str
 				//未获取到信息
 				userInfoBytes = b.Get(nodeUser.UserInfoHash)
 			}
-			rootHash = nodeUser.NodeTrainRootHash //获取证书节点根hash
+			rootHash = nodeUser.NodeTrainRootHash //获取列车节点根hash
 		}
 		return nil
 	})
 	global.MyError(err)
-	//返回一个字节数组，证书节点根hash
+	//返回一个字节数组，列车节点根hash
 	return rootHash, userInfoBytes, result
 }
 func (blockchain *BlockChain_User) UiLoginVerify(pubKey []byte, priKey ecdsa.PrivateKey) string {

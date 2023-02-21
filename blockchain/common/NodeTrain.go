@@ -10,8 +10,8 @@ import (
 
 type NodeTrain struct {
 	Hash          []byte   //当前节点hash
-	TrainInfoHash [][]byte //证书信息hash
-	PreviousHash  []byte   //之前区块的证书节点hash
+	TrainInfoHash [][]byte //列车信息hash
+	PreviousHash  []byte   //之前区块的列车节点hash
 	NextHash      []byte   //下一个节点hash//初始为nil
 }
 

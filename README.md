@@ -1,7 +1,7 @@
 # BDLS
 Efficient BFT in partial synchronous networks 
 
-
+git push <远程主机名> <本地分支名>:<远程分支名>
 
 # BDLS Consensus
 

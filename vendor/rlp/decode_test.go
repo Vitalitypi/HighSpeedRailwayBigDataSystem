@@ -27,7 +27,7 @@ import (
 	"strings"
 	"testing"
 
-	"publicChain/SaveNode/common/math"
+	"common/math"
 )
 
 func TestStreamKind(t *testing.T) {

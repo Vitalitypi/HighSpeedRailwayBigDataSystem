@@ -22,7 +22,7 @@ import (
 	"io"
 	"math/big"
 	"reflect"
-	"publicChain/SaveNode/rlp/internal/rlpstruct"
+	"rlp/internal/rlpstruct"
 )
 
 var (

@@ -13,7 +13,7 @@ type NodeUser struct {
 	Hash              []byte //用户节点的hash
 	PubKey            []byte //用户公钥
 	UserInfoHash      []byte //用户信息hash
-	NodeTrainRootHash []byte //证书节点根hash
+	NodeTrainRootHash []byte //列车节点根hash
 }
 
 func (node *NodeUser) PrintNodeUser() {
@@ -22,7 +22,7 @@ func (node *NodeUser) PrintNodeUser() {
 	fmt.Printf("PubKey:%x\n", node.PubKey)
 	fmt.Printf("UserInfoHash:%x\n", node.UserInfoHash)
 	fmt.Printf("NodeTrainRootHash:%x\n", node.NodeTrainRootHash)
-	//获取证书节点根hash
+	//获取列车节点根hash
 }
 func (nodeUser *NodeUser) SetNodeUserHash() {
 	hash := sha256.Sum256(nodeUser.SerializeNodeUser())

@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"io"
 
-	"publicChain/SaveNode/rlp"
+	"rlp"
 )
 
 type MyCoolType struct {
