@@ -1,11 +1,62 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
-	"github.com/yonggewang/bdls/application/server"
+	"github.com/gin-gonic/gin"
+	"github.com/yonggewang/bdls/blockchain/common"
+	"github.com/yonggewang/bdls/blockchain/user"
+	"github.com/yonggewang/bdls/global"
+	"net/http"
 )
 
+func StartServer() {
+	// 1.创建路由
+	r := gin.Default()
+	// 2.绑定路由规则，执行的函数
+	// gin.Context，封装了request和response
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "hello World!")
+	})
+	r.POST("/register", func(c *gin.Context) {
+		fmt.Println(c.PostForm("name"))
+		c.JSON(http.StatusOK, gin.H{
+			"status": gin.H{
+				"code":    http.StatusOK,
+				"success": true,
+			},
+			"name": "Jane",
+			"nick": "123",
+		})
+	})
+	// 3.监听端口，默认在8080
+	// Run("里面不指定端口号默认为8080")
+	r.Run(":8000")
+}
 func main() {
-	fmt.Println(123)
-	server.StartHttpSever()
+	fmt.Println("hello,world")
+	//pri, pub := global.NewKeyPair()
+	priStr := "2eff810301010a507269766174654b657901ff8200010201095075626c69634b657901ff840001014401ff860000002fff83030101095075626c69634b657901ff840001030105437572766501100001015801ff860001015901ff860000000aff85050102ff8800000046ff8201011963727970746f2f656c6c69707469632e703235364375727665ff890301010970323536437572766501ff8a000101010b4375727665506172616d7301ff8c00000053ff8b0301010b4375727665506172616d7301ff8c00010701015001ff860001014e01ff860001014201ff86000102477801ff86000102477901ff8600010742697453697a6501040001044e616d65010c000000fe012cff8affbd01012102ffffffff00000001000000000000000000000000ffffffffffffffffffffffff012102ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc6325510121025ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b0121026b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c2960121024fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f501fe02000105502d323536000001210273ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795c012102e7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d00012102fe8e63a919332baa17c60530a70cd3fbe505848e2d26ffc23ae3e1bb138db5c900"
+	pubStr := "73cdd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d"
+	pri := global.BackPrivate(priStr)
+	pub, _ := hex.DecodeString(pubStr)
+	bc := global.GetBlockChain("3000")
+	bcUser := user.BlockChain_User{bc.TipHashUser, bc.DB}
+	fmt.Println(bcUser.UiLoginVerify(pub, pri))
+	Register()
+}
+func Register() {
+	//管理员公钥字符串
+	priStr := "2eff810301010a507269766174654b657901ff8200010201095075626c69634b657901ff840001014401ff860000002fff83030101095075626c69634b657901ff840001030105437572766501100001015801ff860001015901ff860000000aff85050102ff8800000046ff8201011963727970746f2f656c6c69707469632e703235364375727665ff890301010970323536437572766501ff8a000101010b4375727665506172616d7301ff8c00000053ff8b0301010b4375727665506172616d7301ff8c00010701015001ff860001014e01ff860001014201ff86000102477801ff86000102477901ff8600010742697453697a6501040001044e616d65010c000000fe012cff8affbd01012102ffffffff00000001000000000000000000000000ffffffffffffffffffffffff012102ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc6325510121025ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b0121026b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c2960121024fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f501fe02000105502d323536000001210273ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795c012102e7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d00012102fe8e63a919332baa17c60530a70cd3fbe505848e2d26ffc23ae3e1bb138db5c900"
+	pubStr := "73cdd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d"
+	pub_admin, _ := hex.DecodeString(pubStr)
+	pri_admin := global.BackPrivate(priStr)
+	//生成公私钥对
+	pri, pub := global.NewKeyPair()
+	fmt.Println(global.StringPrivate(pri), hex.EncodeToString(pub))
+	//生成用户信息	生成的公钥作为账户存储到区块链，用登录的账户来作为公钥进行签名
+	infoUser := common.InfoUser{nil, pub_admin, nil, pub, []byte("test")}
+	infoUser.Sign(pri_admin)
+	infoUser.Hash = infoUser.HashInfoUser()
+	fmt.Println(infoUser.Verify())
 }

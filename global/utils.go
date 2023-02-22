@@ -2,8 +2,15 @@ package global
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/gob"
+	"encoding/hex"
+	"fmt"
+	"github.com/bolt"
 	"golang.org/crypto/ripemd160"
 	"log"
 	"math/big"
@@ -11,11 +18,60 @@ import (
 
 var b58Alphabet = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 
+//通过私钥产生公钥
+func NewKeyPair() (ecdsa.PrivateKey, []byte) {
+	curve := elliptic.P256()
+	private, err := ecdsa.GenerateKey(curve, rand.Reader)
+	MyError(err)
+	pubKey := append(private.PublicKey.X.Bytes(), private.Y.Bytes()...)
+	return *private, pubKey
+}
+
+//将秘钥转化为字符串
+func StringPrivate(priKey ecdsa.PrivateKey) string {
+	var content bytes.Buffer
+	gob.Register(elliptic.P256())
+	encoder := gob.NewEncoder(&content)
+	err := encoder.Encode(priKey)
+	MyError(err)
+	return hex.EncodeToString(content.Bytes())
+}
+
+//将字符串转秘钥
+func BackPrivate(private string) ecdsa.PrivateKey {
+	var priKey ecdsa.PrivateKey
+	keyBytes, err := hex.DecodeString(private)
+	MyError(err)
+	gob.Register(elliptic.P256())
+	decoder := gob.NewDecoder(bytes.NewReader(keyBytes))
+	err = decoder.Decode(&priKey)
+	MyError(err)
+	return priKey
+}
 func ReverseBytes(data []byte) {
 	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
 		data[i], data[j] = data[j], data[i]
 	}
 }
+func GetBlockChain(portId string) *BlockChain {
+	dbName := fmt.Sprintf(DBName, portId)
+	var tipHashUser []byte
+	var tipHashCertificate []byte
+	log.Print("open database...")
+	db, err := bolt.Open(dbName, 0600, nil)
+	MyError(err)
+	err = db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(TableName))
+		if b != nil {
+			tipHashUser = b.Get([]byte(RecentBlockName_User))
+			tipHashCertificate = b.Get([]byte(RecentBlockName_Train))
+		}
+		return nil
+	})
+	MyError(err)
+	return &BlockChain{db, tipHashUser, tipHashCertificate}
+}
+
 func Base58Encode(input []byte) []byte {
 	var result []byte
 	x := big.NewInt(0).SetBytes(input)

@@ -23,103 +23,103 @@ type InfoUser struct {
 	UInfo     []byte
 }
 
-func (userInfo *InfoUser) VerifyInfoUserHash() bool {
-	copyUserInfo := &InfoUser{nil, userInfo.PublicKey, userInfo.Signature, userInfo.Account, userInfo.UInfo}
-	copyUserInfo.SetUserInfoHash()
-	return bytes.Compare(userInfo.Hash, copyUserInfo.Hash) == 0
+func (infoUser *InfoUser) VerifyInfoUserHash() bool {
+	copyInfoUser := &InfoUser{nil, infoUser.PublicKey, infoUser.Signature, infoUser.Account, infoUser.UInfo}
+	copyInfoUser.SetInfoUserHash()
+	return bytes.Compare(infoUser.Hash, copyInfoUser.Hash) == 0
 }
-func (userInfo *InfoUser) SerializeUserInfo() []byte {
-	bytes, err := rlp.EncodeToBytes(userInfo)
+func (infoUser *InfoUser) SerializeInfoUser() []byte {
+	bytes, err := rlp.EncodeToBytes(infoUser)
 	global.MyError(err)
 	return bytes
 }
-func DeserializeUserInfo(bytes []byte) *InfoUser {
-	userInfo := &InfoUser{}
-	err := rlp.DecodeBytes(bytes, userInfo)
+func DeserializeInfoUser(bytes []byte) *InfoUser {
+	infoUser := &InfoUser{}
+	err := rlp.DecodeBytes(bytes, infoUser)
 	global.MyError(err)
-	return userInfo
+	return infoUser
 }
-func (userInfo *InfoUser) SetUserInfoHash() {
-	hash := sha256.Sum256(userInfo.SerializeUserInfo())
-	userInfo.Hash = hash[:]
+func (infoUser *InfoUser) SetInfoUserHash() {
+	hash := sha256.Sum256(infoUser.SerializeInfoUser())
+	infoUser.Hash = hash[:]
 }
-func GetStringUserInfo(userInfoBytes []byte) string {
+func GetStringInfoUser(infoUserBytes []byte) string {
 	result := "|||用户信息：\n|||"
-	userInfo := DeserializeUserInfo(userInfoBytes)
+	infoUser := DeserializeInfoUser(infoUserBytes)
 	result += "Hash:" +
-		hex.EncodeToString(userInfo.Hash) + "\n|||公钥:|||" +
-		hex.EncodeToString(userInfo.PublicKey) + "\n|||签名:|||" +
-		hex.EncodeToString(userInfo.Signature) + "\n|||账户:|||" +
-		hex.EncodeToString(userInfo.Account) + "\n|||信息:|||" +
-		hex.EncodeToString(userInfo.UInfo) + "\n\n"
+		hex.EncodeToString(infoUser.Hash) + "\n|||公钥:|||" +
+		hex.EncodeToString(infoUser.PublicKey) + "\n|||签名:|||" +
+		hex.EncodeToString(infoUser.Signature) + "\n|||账户:|||" +
+		hex.EncodeToString(infoUser.Account) + "\n|||信息:|||" +
+		hex.EncodeToString(infoUser.UInfo) + "\n\n"
 	return result
 }
-func (userInfo *InfoUser) PrintUserInfo() {
-	fmt.Printf("Hash:%x\n", userInfo.Hash)
-	fmt.Printf("PublicKey:%x\n", userInfo.PublicKey)
-	fmt.Printf("Signature:%x\n", userInfo.Signature)
-	fmt.Printf("Account:%x\n", userInfo.Account)
-	fmt.Printf("UInfo:%x\n", userInfo.UInfo)
+func (infoUser *InfoUser) PrintInfoUser() {
+	fmt.Printf("Hash:%x\n", infoUser.Hash)
+	fmt.Printf("PublicKey:%x\n", infoUser.PublicKey)
+	fmt.Printf("Signature:%x\n", infoUser.Signature)
+	fmt.Printf("Account:%x\n", infoUser.Account)
+	fmt.Printf("UInfo:%x\n", infoUser.UInfo)
 }
-func (userInfo *InfoUser) isCoinBaseUserInfo() bool {
-	return len(userInfo.Hash) == 0
+func (infoUser *InfoUser) isCoinBaseInfoUser() bool {
+	return len(infoUser.Hash) == 0
 }
-func (userInfo *InfoUser) TrimmedCopy() InfoUser {
-	userCopy := InfoUser{userInfo.Hash, nil, nil, userInfo.Account, userInfo.UInfo}
+func (infoUser *InfoUser) TrimmedCopy() InfoUser {
+	userCopy := InfoUser{infoUser.Hash, nil, nil, infoUser.Account, infoUser.UInfo}
 	return userCopy
 }
-func (userInfo *InfoUser) HashUserInfo() []byte {
+func (infoUser *InfoUser) HashInfoUser() []byte {
 	var hash [32]byte
-	Copy := *userInfo
+	Copy := *infoUser
 	Copy.Hash = []byte{}
-	hash = sha256.Sum256(Copy.SerializeUserInfo())
+	hash = sha256.Sum256(Copy.SerializeInfoUser())
 	return hash[:]
 }
-func (userInfo *InfoUser) Sign(privateKey ecdsa.PrivateKey) {
-	if userInfo.isCoinBaseUserInfo() {
+func (infoUser *InfoUser) Sign(privateKey ecdsa.PrivateKey) {
+	if infoUser.isCoinBaseInfoUser() {
 		return
 	}
-	userCopy := userInfo.TrimmedCopy()
+	userCopy := infoUser.TrimmedCopy()
 	//cerCopy.TrainInformation.Signature = nil
-	userCopy.Hash = userCopy.HashUserInfo()
+	userCopy.Hash = userCopy.HashInfoUser()
 	//cerCopy.TrainInformation.PublicKey=append(privateKey.PublicKey.X.Bytes(),privateKey.Y.Bytes()...)
 	//签名代码
 	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, userCopy.Hash)
 	global.MyError(err)
 	signature := append(r.Bytes(), s.Bytes()...)
-	userInfo.Signature = signature
+	infoUser.Signature = signature
 }
 func Register(pubKey []byte, infos []byte) *InfoUser {
 	//fmt.Println("infos")
 	//创建用户信息
 	info, _ := hex.DecodeString(time.Now().String())
-	userInfo := &InfoUser{nil, global.PublicKey, nil, pubKey, info}
-	userInfo.SetUserInfoHash()
-	userInfo.Sign(global.PrivateKey) //进行签名
-	userInfo.Hash = userInfo.HashUserInfo()
+	infoUser := &InfoUser{nil, global.PublicKey, nil, pubKey, info}
+	infoUser.SetInfoUserHash()
+	infoUser.Sign(global.PrivateKey) //进行签名
+	infoUser.Hash = infoUser.HashInfoUser()
 
-	//nodeUser:= NewNodeUser(pubKey,userInfo.Hash,nil)
+	//nodeUser:= NewNodeUser(pubKey,infoUser.Hash,nil)
 	//address:=hex.EncodeToString(Global.GetAddress(pubKey))
-	//Map_UserInfo[address]=userInfo
+	//Map_InfoUser[address]=infoUser
 	//Map_NodeUser[address]=nodeUser
-	return userInfo
+	return infoUser
 }
-func (userInfo *InfoUser) Verify() bool {
-	if userInfo.isCoinBaseUserInfo() {
+func (infoUser *InfoUser) Verify() bool {
+	if infoUser.isCoinBaseInfoUser() {
 		return true
 	}
-	userCopy := userInfo.TrimmedCopy()
+	userCopy := infoUser.TrimmedCopy()
 	curve := elliptic.P256()
-	userCopy.Hash = userCopy.HashUserInfo()
+	userCopy.Hash = userCopy.HashInfoUser()
 	r := big.Int{}
 	s := big.Int{}
-	sign := userInfo.Signature
+	sign := infoUser.Signature
 	signLen := len(sign)
 	r.SetBytes(sign[:(signLen / 2)])
 	s.SetBytes(sign[(signLen / 2):])
 	x := big.Int{}
 	y := big.Int{}
-	pubKey := userInfo.PublicKey
+	pubKey := infoUser.PublicKey
 	pubKeyLen := len(pubKey)
 	x.SetBytes(pubKey[:(pubKeyLen / 2)])
 	y.SetBytes(pubKey[(pubKeyLen / 2):])

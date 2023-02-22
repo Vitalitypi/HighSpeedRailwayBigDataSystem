@@ -21,5 +21,5 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 func StartHttpSever() {
 	http.HandleFunc("/query", handleQuery)
 	http.HandleFunc("/register", handleRegister)
-	http.ListenAndServe("localhost:6666", nil)
+	http.ListenAndServe("localhost:12345", nil)
 }

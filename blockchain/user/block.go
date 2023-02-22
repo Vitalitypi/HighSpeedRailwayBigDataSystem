@@ -134,7 +134,7 @@ func CreateGenesisBlock() (*Block_Header_User, *Block_Body_User) {
 		bytes,
 		[]byte("administer"),
 	}
-	userInfo.SetUserInfoHash()
+	userInfo.SetInfoUserHash()
 
 	//Global_UserInfos=InsertGlobalUserInfo(userInfo,Global_UserInfos)
 	common.Map_UserInfo[global.AddressString] = userInfo

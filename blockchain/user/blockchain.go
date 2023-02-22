@@ -58,7 +58,7 @@ func (blockchain *BlockChain_User) SetBlockChainBytes(blockchainBytes *global.Bl
 					}
 					if len(nodeUser.UserInfoHash) != 0 {
 						//存储用户信息
-						userInfo := common.DeserializeUserInfo(userInfoBytesArr[indexUserInfo])
+						userInfo := common.DeserializeInfoUser(userInfoBytesArr[indexUserInfo])
 						if !userInfo.VerifyInfoUserHash() {
 							fmt.Println("Verify UserInfoHash error...")
 						}
@@ -250,8 +250,8 @@ func (blockchain *BlockChain_User) PrintBlockChainUser() {
 					node := common.DeserializeNodeUser(nodeBytes)
 					node.PrintNodeUser()
 					userInfoBytes := b.Get(node.UserInfoHash)
-					userInfo := common.DeserializeUserInfo(userInfoBytes)
-					userInfo.PrintUserInfo()
+					userInfo := common.DeserializeInfoUser(userInfoBytes)
+					userInfo.PrintInfoUser()
 				}
 				fmt.Println("用户区块体打印完毕\n===========")
 			}
@@ -429,7 +429,7 @@ func CreateBlockChainUser() *BlockChain_User {
 			//string(公钥)与用户节点映射
 			for k, v := range common.Map_NodeUser {
 				nodeUserBytes := v.SerializeNodeUser()
-				userInfoBytes := common.Map_UserInfo[k].SerializeUserInfo()
+				userInfoBytes := common.Map_UserInfo[k].SerializeInfoUser()
 				addressBytes := global.GetAddress(v.PubKey)
 				//3、将公钥与用户节点字节存储到表
 				err = b.Put(v.PubKey, nodeUserBytes)
@@ -494,7 +494,7 @@ func (blockchain *BlockChain_User) AddBlockToBlockChain(header *Block_Header_Use
 			//保存用户信息
 
 			for k, v := range common.Map_UserInfo {
-				userInfoBytes := v.SerializeUserInfo()
+				userInfoBytes := v.SerializeInfoUser()
 				//4、将用户信息hash与用户信息字节存储到表
 				err = b.Put(v.Hash, userInfoBytes)
 				global.MyError(err)
