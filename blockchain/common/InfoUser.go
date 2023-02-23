@@ -17,9 +17,9 @@ import (
 //用户信息
 type InfoUser struct {
 	Hash      []byte
-	PublicKey []byte
-	Signature []byte
-	Account   []byte
+	PublicKey []byte    //对信息签名的管理员公钥
+	Signature [2][]byte //r,s签名
+	Account   []byte    //账户
 	UInfo     []byte
 }
 
@@ -49,7 +49,7 @@ func GetStringInfoUser(infoUserBytes []byte) string {
 	result += "Hash:" +
 		hex.EncodeToString(infoUser.Hash) + "\n|||公钥:|||" +
 		hex.EncodeToString(infoUser.PublicKey) + "\n|||签名:|||" +
-		hex.EncodeToString(infoUser.Signature) + "\n|||账户:|||" +
+		hex.EncodeToString(infoUser.Signature[0]) + "\n|||账户:|||" +
 		hex.EncodeToString(infoUser.Account) + "\n|||信息:|||" +
 		hex.EncodeToString(infoUser.UInfo) + "\n\n"
 	return result
@@ -65,9 +65,11 @@ func (infoUser *InfoUser) isCoinBaseInfoUser() bool {
 	return len(infoUser.Hash) == 0
 }
 func (infoUser *InfoUser) TrimmedCopy() InfoUser {
-	userCopy := InfoUser{infoUser.Hash, nil, nil, infoUser.Account, infoUser.UInfo}
+	userCopy := InfoUser{nil, nil, [2][]byte{}, infoUser.Account, infoUser.UInfo}
 	return userCopy
 }
+
+//获取hash值为空时的hash值
 func (infoUser *InfoUser) HashInfoUser() []byte {
 	var hash [32]byte
 	Copy := *infoUser
@@ -75,10 +77,9 @@ func (infoUser *InfoUser) HashInfoUser() []byte {
 	hash = sha256.Sum256(Copy.SerializeInfoUser())
 	return hash[:]
 }
+
+//Sign只对Account、UInfo等信息进行签名
 func (infoUser *InfoUser) Sign(privateKey ecdsa.PrivateKey) {
-	if infoUser.isCoinBaseInfoUser() {
-		return
-	}
 	userCopy := infoUser.TrimmedCopy()
 	//cerCopy.TrainInformation.Signature = nil
 	userCopy.Hash = userCopy.HashInfoUser()
@@ -86,14 +87,15 @@ func (infoUser *InfoUser) Sign(privateKey ecdsa.PrivateKey) {
 	//签名代码
 	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, userCopy.Hash)
 	global.MyError(err)
-	signature := append(r.Bytes(), s.Bytes()...)
-	infoUser.Signature = signature
+	//signature := append(r.Bytes(), s.Bytes()...)
+	infoUser.Signature[0] = r.Bytes()
+	infoUser.Signature[1] = s.Bytes()
 }
 func Register(pubKey []byte, infos []byte) *InfoUser {
 	//fmt.Println("infos")
 	//创建用户信息
 	info, _ := hex.DecodeString(time.Now().String())
-	infoUser := &InfoUser{nil, global.PublicKey, nil, pubKey, info}
+	infoUser := &InfoUser{nil, global.PublicKey, [2][]byte{}, pubKey, info}
 	infoUser.SetInfoUserHash()
 	infoUser.Sign(global.PrivateKey) //进行签名
 	infoUser.Hash = infoUser.HashInfoUser()
@@ -105,26 +107,21 @@ func Register(pubKey []byte, infos []byte) *InfoUser {
 	return infoUser
 }
 func (infoUser *InfoUser) Verify() bool {
-	if infoUser.isCoinBaseInfoUser() {
-		return true
-	}
-	userCopy := infoUser.TrimmedCopy()
-	curve := elliptic.P256()
-	userCopy.Hash = userCopy.HashInfoUser()
+	userCopy := infoUser.TrimmedCopy()      //将其他信息剪除
+	userCopy.Hash = userCopy.HashInfoUser() //获取信息的简要信息
 	r := big.Int{}
 	s := big.Int{}
 	sign := infoUser.Signature
-	signLen := len(sign)
-	r.SetBytes(sign[:(signLen / 2)])
-	s.SetBytes(sign[(signLen / 2):])
+	r.SetBytes(sign[0])
+	s.SetBytes(sign[1])
 	x := big.Int{}
 	y := big.Int{}
 	pubKey := infoUser.PublicKey
 	pubKeyLen := len(pubKey)
 	x.SetBytes(pubKey[:(pubKeyLen / 2)])
 	y.SetBytes(pubKey[(pubKeyLen / 2):])
-	rawPubKey := ecdsa.PublicKey{curve, &x, &y}
-	if !ecdsa.Verify(&rawPubKey, userCopy.Hash, &r, &s) {
+	public := ecdsa.PublicKey{elliptic.P256(), &x, &y}
+	if !ecdsa.Verify(&public, userCopy.Hash, &r, &s) {
 		return false
 	}
 	return true

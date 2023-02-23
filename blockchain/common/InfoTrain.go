@@ -14,18 +14,18 @@ import (
 )
 
 type InfoTrain struct {
-	Hash      []byte   //列车编号
-	PublicKey []byte   //公钥
-	Signature []byte   //数字签名
-	CtName    string   //列车名称
-	UserName  []string //列车人员姓名
+	Hash      []byte    //列车编号
+	PublicKey []byte    //公钥
+	Signature [2][]byte //数字签名
+	CtName    string    //列车名称
+	UserName  []string  //列车人员姓名
 	//RipeMd160Hash []byte
 	Time  string //时间
 	Other string //其他信息
 }
 
 func Save(workNames string, userNames []string, times string, others string) *InfoTrain {
-	InfoTrain := &InfoTrain{nil, global.PublicKey, nil, workNames, userNames, times, others}
+	InfoTrain := &InfoTrain{nil, global.PublicKey, [2][]byte{}, workNames, userNames, times, others}
 	InfoTrain.Sign(global.PrivateKey)
 	InfoTrain.SetInfoTrainHash()
 	//Map_InfoTrain[hex.EncodeToString(InfoTrain.Hash)]=InfoTrain
@@ -43,7 +43,7 @@ func GetStringInfoTrain(infoBytes []byte) string {
 	for _, name := range info.UserName {
 		userNames += name
 	}
-	result := "\n列车信息：|||公钥：" + hex.EncodeToString(info.PublicKey) + "\n|||签名：" + hex.EncodeToString(info.Signature) + "" +
+	result := "\n列车信息：|||公钥：" + hex.EncodeToString(info.PublicKey) + "\n|||签名：\nr:" + hex.EncodeToString(info.Signature[0]) + "\ns:" + hex.EncodeToString(info.Signature[1]) + "" +
 		"\n|||Hash:" + hex.EncodeToString(info.Hash) +
 		"\n|||作品名称：" + info.CtName +
 		"\n|||作者：" + userNames +
@@ -104,9 +104,9 @@ func (info *InfoTrain) Verify() bool {
 	r := big.Int{}
 	s := big.Int{}
 	sign := info.Signature
-	signLen := len(sign)
-	r.SetBytes(sign[:(signLen / 2)])
-	s.SetBytes(sign[(signLen / 2):])
+	//signLen := len(sign)
+	r.SetBytes(sign[0])
+	s.SetBytes(sign[1])
 
 	x := big.Int{}
 	y := big.Int{}
@@ -124,7 +124,7 @@ func (info *InfoTrain) Verify() bool {
 func (info *InfoTrain) TrimmedCopy() InfoTrain {
 	copyInfoTrain := InfoTrain{info.Hash,
 		nil,
-		nil,
+		[2][]byte{},
 		info.CtName,
 		info.UserName,
 		//info.RipeMd160Hash,
@@ -147,6 +147,6 @@ func (info *InfoTrain) Sign(privateKey ecdsa.PrivateKey) {
 	//签名代码
 	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, cerCopy.Hash)
 	global.MyError(err)
-	signature := append(r.Bytes(), s.Bytes()...)
-	info.Signature = signature
+	info.Signature[0] = r.Bytes()
+	info.Signature[1] = s.Bytes()
 }

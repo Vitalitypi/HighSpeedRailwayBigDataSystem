@@ -26,6 +26,10 @@ func NewKeyPair() (ecdsa.PrivateKey, []byte) {
 	pubKey := append(private.PublicKey.X.Bytes(), private.Y.Bytes()...)
 	return *private, pubKey
 }
+func VerifyKeyPair(pri ecdsa.PrivateKey, pub []byte) bool {
+	pubBytes := append(pri.PublicKey.X.Bytes(), pri.PublicKey.Y.Bytes()...)
+	return bytes.Compare(pubBytes, pub) == 0
+}
 
 //将秘钥转化为字符串
 func StringPrivate(priKey ecdsa.PrivateKey) string {

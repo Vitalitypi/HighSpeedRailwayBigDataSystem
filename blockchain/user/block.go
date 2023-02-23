@@ -130,7 +130,7 @@ func CreateGenesisBlock() (*Block_Header_User, *Block_Body_User) {
 	global.MyError(err)
 	userInfo := &common.InfoUser{nil,
 		bytes,
-		[]byte("administer"),
+		[2][]byte{},
 		bytes,
 		[]byte("administer"),
 	}
