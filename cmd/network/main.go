@@ -54,7 +54,7 @@ func Register() {
 	//生成公私钥对
 	_, pub := global.NewKeyPair()
 	//生成用户信息	生成的公钥作为账户存储到区块链，用登录的账户来作为公钥进行签名
-	infoUser := common.InfoUser{nil, pub_admin, [2][]byte{}, pub, []byte("test")}
+	infoUser := common.InfoUser{nil, pub_admin, nil, pub, []byte("test")}
 	infoUser.Sign(pri_admin)
 	infoUser.Hash = infoUser.HashInfoUser()
 	fmt.Println(infoUser.Verify())

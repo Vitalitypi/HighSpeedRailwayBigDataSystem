@@ -17,9 +17,9 @@ import (
 //用户信息
 type InfoUser struct {
 	Hash      []byte
-	PublicKey []byte    //对信息签名的管理员公钥
-	Signature [2][]byte //r,s签名
-	Account   []byte    //账户
+	PublicKey []byte //对信息签名的管理员公钥
+	Signature []byte //r,s签名
+	Account   []byte //账户
 	UInfo     []byte
 }
 
@@ -49,7 +49,7 @@ func GetStringInfoUser(infoUserBytes []byte) string {
 	result += "Hash:" +
 		hex.EncodeToString(infoUser.Hash) + "\n|||公钥:|||" +
 		hex.EncodeToString(infoUser.PublicKey) + "\n|||签名:|||" +
-		hex.EncodeToString(infoUser.Signature[0]) + "\n|||账户:|||" +
+		hex.EncodeToString(infoUser.Signature) + "\n|||账户:|||" +
 		hex.EncodeToString(infoUser.Account) + "\n|||信息:|||" +
 		hex.EncodeToString(infoUser.UInfo) + "\n\n"
 	return result
@@ -65,7 +65,7 @@ func (infoUser *InfoUser) isCoinBaseInfoUser() bool {
 	return len(infoUser.Hash) == 0
 }
 func (infoUser *InfoUser) TrimmedCopy() InfoUser {
-	userCopy := InfoUser{nil, nil, [2][]byte{}, infoUser.Account, infoUser.UInfo}
+	userCopy := InfoUser{nil, nil, nil, infoUser.Account, infoUser.UInfo}
 	return userCopy
 }
 
@@ -87,15 +87,14 @@ func (infoUser *InfoUser) Sign(privateKey ecdsa.PrivateKey) {
 	//签名代码
 	r, s, err := ecdsa.Sign(rand.Reader, &privateKey, userCopy.Hash)
 	global.MyError(err)
-	//signature := append(r.Bytes(), s.Bytes()...)
-	infoUser.Signature[0] = r.Bytes()
-	infoUser.Signature[1] = s.Bytes()
+	signature := append(r.Bytes(), s.Bytes()...)
+	infoUser.Signature = signature
 }
 func Register(pubKey []byte, infos []byte) *InfoUser {
 	//fmt.Println("infos")
 	//创建用户信息
 	info, _ := hex.DecodeString(time.Now().String())
-	infoUser := &InfoUser{nil, global.PublicKey, [2][]byte{}, pubKey, info}
+	infoUser := &InfoUser{nil, global.PublicKey, nil, pubKey, info}
 	infoUser.SetInfoUserHash()
 	infoUser.Sign(global.PrivateKey) //进行签名
 	infoUser.Hash = infoUser.HashInfoUser()
@@ -112,8 +111,9 @@ func (infoUser *InfoUser) Verify() bool {
 	r := big.Int{}
 	s := big.Int{}
 	sign := infoUser.Signature
-	r.SetBytes(sign[0])
-	s.SetBytes(sign[1])
+	signLen := len(sign)
+	r.SetBytes(sign[:(signLen / 2)])
+	s.SetBytes(sign[(signLen / 2):])
 	x := big.Int{}
 	y := big.Int{}
 	pubKey := infoUser.PublicKey
