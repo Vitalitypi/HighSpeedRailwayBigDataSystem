@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/bolt"
+	"github.com/yonggewang/bdls"
 	"golang.org/crypto/ripemd160"
 	"log"
 	"math/big"
@@ -20,8 +21,8 @@ var b58Alphabet = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuv
 
 //通过私钥产生公钥
 func NewKeyPair() (ecdsa.PrivateKey, []byte) {
-	curve := elliptic.P256()
-	private, err := ecdsa.GenerateKey(curve, rand.Reader)
+	//curve := elliptic.P256()
+	private, err := ecdsa.GenerateKey(bdls.S256Curve, rand.Reader)
 	MyError(err)
 	pubKey := append(private.PublicKey.X.Bytes(), private.Y.Bytes()...)
 	return *private, pubKey

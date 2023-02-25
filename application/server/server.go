@@ -2,24 +2,30 @@ package server
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func handleQuery(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	fmt.Println(values)
-	w.Write([]byte("hello,world"))
-}
-func handleRegister(w http.ResponseWriter, r *http.Request) {
-	values := r.URL.Query()
-	fmt.Println(values, r.Method)
-	form := make([]byte, 1024)
-	r.Body.Read(form)
-	fmt.Println(string(form))
-	w.Write([]byte("hello,world"))
-}
-func StartHttpSever() {
-	http.HandleFunc("/query", handleQuery)
-	http.HandleFunc("/register", handleRegister)
-	http.ListenAndServe("localhost:12345", nil)
+func run() {
+	// 1.创建路由
+	r := gin.Default()
+	// 2.绑定路由规则，执行的函数
+	// gin.Context，封装了request和response
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "hello World!")
+	})
+	r.POST("/register", func(c *gin.Context) {
+		fmt.Println(c.PostForm("name"))
+		c.JSON(http.StatusOK, gin.H{
+			"status": gin.H{
+				"code":    http.StatusOK,
+				"success": true,
+			},
+			"name": "Jane",
+			"nick": "123",
+		})
+	})
+	// 3.监听端口，默认在8080
+	// Run("里面不指定端口号默认为8080")
+	r.Run(":8000")
 }

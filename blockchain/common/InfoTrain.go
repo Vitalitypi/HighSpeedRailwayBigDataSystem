@@ -3,11 +3,11 @@ package common
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/yonggewang/bdls"
 	"github.com/yonggewang/bdls/global"
 	"math/big"
 	"rlp"
@@ -99,7 +99,7 @@ func (info *InfoTrain) Verify() bool {
 		return true
 	}
 	cerCopy := info.TrimmedCopy()
-	curve := elliptic.P256()
+	//curve := elliptic.P256()
 	cerCopy.Hash = cerCopy.HashInfoTrain()
 	r := big.Int{}
 	s := big.Int{}
@@ -113,7 +113,7 @@ func (info *InfoTrain) Verify() bool {
 	pubKeyLen := len(pubKey)
 	x.SetBytes(pubKey[:(pubKeyLen / 2)])
 	y.SetBytes(pubKey[(pubKeyLen / 2):])
-	rawPubKey := ecdsa.PublicKey{curve, &x, &y}
+	rawPubKey := ecdsa.PublicKey{bdls.S256Curve, &x, &y}
 	if !ecdsa.Verify(&rawPubKey, cerCopy.Hash, &r, &s) {
 		return false
 	}

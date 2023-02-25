@@ -126,7 +126,7 @@ func (body *Block_Body_User) GetUserInfoMapRootHash() []byte {
 func CreateGenesisBlock() (*Block_Header_User, *Block_Body_User) {
 	//管理员信息
 	//公钥转字节数组
-	bytes, err := hex.DecodeString("73ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d")
+	bytes, err := hex.DecodeString(global.Admin)
 	global.MyError(err)
 	userInfo := &common.InfoUser{nil,
 		bytes,

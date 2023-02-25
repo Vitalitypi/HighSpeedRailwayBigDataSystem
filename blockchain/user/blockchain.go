@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/bolt"
+	"github.com/yonggewang/bdls"
 	"github.com/yonggewang/bdls/blockchain/common"
 	"github.com/yonggewang/bdls/global"
 	"log"
@@ -318,22 +319,22 @@ func (blockchain *BlockChain_User) QueryUser(pubKey []byte) ([]byte, []byte, str
 	//返回一个字节数组，列车节点根hash
 	return rootHash, userInfoBytes, result
 }
-func (blockchain *BlockChain_User) UiLoginVerify(pubKey []byte, priKey ecdsa.PrivateKey) string {
-	ans := ""
-	adminPubKey, err := hex.DecodeString("73ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d")
+func (blockchain *BlockChain_User) UiLoginVerify() string {
+	admin, err := hex.DecodeString(global.Admin)
 	global.MyError(err)
-	publicBytes := append(priKey.PublicKey.X.Bytes(), priKey.Y.Bytes()...)
-	if bytes.Compare(publicBytes, pubKey) != 0 {
-		return ans
-	}
-	if bytes.Compare(adminPubKey, pubKey) == 0 {
+	ans := "error"
+	d := new(big.Int)
+	d, _ = d.SetString(global.D, 10)
+	x, y := bdls.S256Curve.ScalarBaseMult(d.Bytes())
+	public := append(x.Bytes(), y.Bytes()...)
+	if bytes.Compare(public, admin) == 0 {
 		return "admin"
 	}
 	err = blockchain.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(global.TableName))
 		if b != nil {
 			//通过公钥字节数组获取用户节点
-			bytes := b.Get(pubKey)
+			bytes := b.Get(public)
 			if len(bytes) != 0 {
 				ans = "user"
 			}

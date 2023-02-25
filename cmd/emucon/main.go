@@ -8,12 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/yonggewang/bdls/blockchain/train"
 	"github.com/yonggewang/bdls/blockchain/user"
 	"github.com/yonggewang/bdls/global"
 	"log"
 	"math/big"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -30,23 +32,55 @@ type Quorum struct {
 
 var Id int
 
+//生成创世区块
 func genesisBlock() {
-	bytes, err := hex.DecodeString("73ccd17cdc6275381f365f14e24ccae8e95a216d399889ff793a7a59e134795ce7270a9009b11b250235d314499f2258d9c8952a298bc2d5b09ae80c821f676d")
+	bytes, err := hex.DecodeString(global.Admin)
 	global.MyError(err)
 	global.PublicKey = bytes
 	global.AddressString = hex.EncodeToString(global.GetAddress(bytes))
-	global.PortId = "3000"
 	chainUser := user.CreateBlockChainUser()
 	chainUser.DB.Close()
 	chainTrain := train.CreateBlockChainTrain()
 	chainTrain.DB.Close()
 }
+
 func main() {
 	app := &cli.App{
 		Name:                 "BDLS consensus protocol emulator",
 		Usage:                "Generate quorum then emulate participants",
 		EnableBashCompletion: true,
 		Commands: []*cli.Command{
+			{
+				Name:  "genesis",
+				Usage: "generate a genesis block",
+				Flags: []cli.Flag{},
+				Action: func(c *cli.Context) error {
+					genesisBlock()
+					return nil
+				},
+			},
+			{
+				Name:  "login",
+				Usage: "login system to begin",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "account",
+						Value: "",
+						Usage: "string of registration",
+					},
+				},
+				Action: func(c *cli.Context) error {
+					account := c.String("account")
+					global.D = account
+					global.BlockChainTotal = global.GetBlockChain(global.PortId)
+					user.BlockchainUser = &user.BlockChain_User{global.BlockChainTotal.TipHashUser, global.BlockChainTotal.DB}
+					train.BlockchainTrain = &train.BlockChain_Train{global.BlockChainTotal.TipHashTrain, global.BlockChainTotal.DB}
+					fmt.Println()
+					//验证账户是否有效、合法
+					global.StatusLogin = user.BlockchainUser.UiLoginVerify()
+					return nil
+				},
+			},
 			{
 				Name:  "genkeys",
 				Usage: "generate quorum to participant in consensus",
@@ -156,7 +190,6 @@ func main() {
 						// set validator sequence
 						config.Participants = append(config.Participants, bdls.DefaultPubKeyToIdentity(&priv.PublicKey))
 					}
-
 					if err := startConsensus(c, config); err != nil {
 						return err
 					}
@@ -257,14 +290,11 @@ func startConsensus(c *cli.Context, config *bdls.Config) error {
 	}
 
 	lastHeight := uint64(0)
-
+	go startHttpServer()
 NEXTHEIGHT:
 	for {
 		//获取到数据
 
-		data := make([]byte, 10)
-		data[1] = byte(Id + 10)
-		//tagent.Propose(data)
 		//fmt.Println("propose...")
 		for {
 			newHeight, newRound, newState := tagent.GetLatestState()
@@ -278,4 +308,28 @@ NEXTHEIGHT:
 			<-time.After(20 * time.Millisecond)
 		}
 	}
+}
+
+func startHttpServer() {
+	// 1.创建路由
+	r := gin.Default()
+	// 2.绑定路由规则，执行的函数
+	// gin.Context，封装了request和response
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "hello World!")
+	})
+	r.POST("/register", func(c *gin.Context) {
+		fmt.Println(c.PostForm("name"))
+		c.JSON(http.StatusOK, gin.H{
+			"status": gin.H{
+				"code":    http.StatusOK,
+				"success": true,
+			},
+			"name": "Jane",
+			"nick": "123",
+		})
+	})
+	// 3.监听端口，默认在8080
+	// Run("里面不指定端口号默认为8080")
+	r.Run(":8000")
 }
