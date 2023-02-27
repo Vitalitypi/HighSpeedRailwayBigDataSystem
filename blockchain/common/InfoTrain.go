@@ -14,14 +14,13 @@ import (
 )
 
 type InfoTrain struct {
-	Hash      []byte   //列车编号
+	Hash      []byte   //列车信息hash
 	PublicKey []byte   //公钥
 	Signature []byte   //数字签名
-	CtName    string   //列车名称
+	ItName    string   //列车名称
 	UserName  []string //列车人员姓名
-	//RipeMd160Hash []byte
-	Time  string //时间
-	Other string //其他信息
+	Time      string   //时间
+	Other     string   //其他信息
 }
 
 func Save(workNames string, userNames []string, times string, others string) *InfoTrain {
@@ -45,7 +44,7 @@ func GetStringInfoTrain(infoBytes []byte) string {
 	}
 	result := "\n列车信息：|||公钥：" + hex.EncodeToString(info.PublicKey) + "\n|||签名：" + hex.EncodeToString(info.Signature) + "" +
 		"\n|||Hash:" + hex.EncodeToString(info.Hash) +
-		"\n|||作品名称：" + info.CtName +
+		"\n|||作品名称：" + info.ItName +
 		"\n|||作者：" + userNames +
 		"\n|||时间：" + info.Time +
 		"\n|||其他：" + info.Other
@@ -55,7 +54,7 @@ func (info *InfoTrain) PrintInfoTrain() {
 	fmt.Printf("当前列车信息hash：%x\n", info.Hash)
 	fmt.Printf("当前列车信息公钥：%x\n", info.PublicKey)
 	fmt.Printf("当前列车信息数字签名：%x\n", info.Signature)
-	fmt.Println("列车名称：", info.CtName)
+	fmt.Println("列车名称：", info.ItName)
 	fmt.Println("获奖人员姓名：", info.UserName)
 	fmt.Println("时间：", info.Time)
 	fmt.Println("其他信息：", info.Other)
@@ -72,7 +71,7 @@ func DeserializeInfoTrain(bytes []byte) *InfoTrain {
 	return info
 }
 func (info *InfoTrain) VerifyInfoTrainHash() bool {
-	copyInfo := &InfoTrain{nil, info.PublicKey, info.Signature, info.CtName, info.UserName, info.Time, info.Other}
+	copyInfo := &InfoTrain{nil, info.PublicKey, info.Signature, info.ItName, info.UserName, info.Time, info.Other}
 	copyInfo.SetInfoTrainHash()
 	return bytes.Compare(info.Hash, copyInfo.Hash) == 0
 }
@@ -82,7 +81,7 @@ func (info *InfoTrain) SetInfoTrainHash() {
 }
 
 func (info *InfoTrain) IsCoinBaseCertificate() bool {
-	return info.Time == "" && info.CtName == ""
+	return info.Time == "" && info.ItName == ""
 }
 
 //获取列车的hash值
@@ -124,13 +123,13 @@ func (info *InfoTrain) TrimmedCopy() InfoTrain {
 	copyInfoTrain := InfoTrain{info.Hash,
 		nil,
 		nil,
-		info.CtName,
+		info.ItName,
 		info.UserName,
 		//info.RipeMd160Hash,
 		info.Time,
 		info.Other,
 	}
-	//cerCopy:=InfoTrain{info.Hash, info.PublicKey,nil,info.CtName}
+	//cerCopy:=InfoTrain{info.Hash, info.PublicKey,nil,info.ItName}
 	return copyInfoTrain
 }
 

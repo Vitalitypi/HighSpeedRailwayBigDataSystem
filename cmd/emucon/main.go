@@ -17,6 +17,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -34,10 +35,10 @@ var Id int
 
 //生成创世区块
 func genesisBlock() {
-	bytes, err := hex.DecodeString(global.Admin)
-	global.MyError(err)
-	global.PublicKey = bytes
-	global.AddressString = hex.EncodeToString(global.GetAddress(bytes))
+	//bytes, err := hex.DecodeString(global.Admin)
+	//global.MyError(err)
+	//global.PublicKey = bytes
+	//global.AddressString = hex.EncodeToString(global.GetAddress(bytes))
 	chainUser := user.CreateBlockChainUser()
 	chainUser.DB.Close()
 	chainTrain := train.CreateBlockChainTrain()
@@ -53,31 +54,94 @@ func main() {
 			{
 				Name:  "genesis",
 				Usage: "generate a genesis block",
-				Flags: []cli.Flag{},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "config",
+						Value: "./quorum.json",
+						Usage: "the shared quorum config file",
+					},
+					&cli.IntFlag{
+						Name:  "listen",
+						Value: 3000,
+						Usage: "the client's listening port",
+					},
+				},
 				Action: func(c *cli.Context) error {
+					global.PortId = strconv.Itoa(c.Int("listen"))
+					// open quorum config
+					file, err := os.Open(c.String("config"))
+					if err != nil {
+						return err
+					}
+					defer file.Close()
+
+					quorum := new(Quorum)
+					err = json.NewDecoder(file).Decode(quorum)
+					if err != nil {
+						return err
+					}
+					//将所有共识委员加入到管理员数组
+					for k := range quorum.Keys {
+						priv := new(ecdsa.PrivateKey)
+						priv.PublicKey.Curve = bdls.S256Curve
+						priv.D = quorum.Keys[k]
+						priv.PublicKey.X, priv.PublicKey.Y = bdls.S256Curve.ScalarBaseMult(priv.D.Bytes())
+						global.Admin = append(global.Admin, hex.EncodeToString(append(priv.PublicKey.X.Bytes(), priv.PublicKey.Y.Bytes()...)))
+					}
 					genesisBlock()
 					return nil
 				},
 			},
 			{
 				Name:  "login",
-				Usage: "login system to begin",
+				Usage: "login system to start a consensus",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:  "account",
 						Value: "",
 						Usage: "string of registration",
 					},
+					&cli.IntFlag{
+						Name:  "listen",
+						Value: 3000,
+						Usage: "the client's listening port",
+					},
 				},
 				Action: func(c *cli.Context) error {
 					account := c.String("account")
+					if len(account) == 0 {
+						return errors.New(fmt.Sprint("Account cannot be a zero"))
+					}
+					Id = c.Int("listen")
+					//进行全局相关变量配置以及登录操作
+					global.PortId = strconv.Itoa(Id)
 					global.D = account
 					global.BlockChainTotal = global.GetBlockChain(global.PortId)
 					user.BlockchainUser = &user.BlockChain_User{global.BlockChainTotal.TipHashUser, global.BlockChainTotal.DB}
 					train.BlockchainTrain = &train.BlockChain_Train{global.BlockChainTotal.TipHashTrain, global.BlockChainTotal.DB}
-					fmt.Println()
 					//验证账户是否有效、合法
 					global.StatusLogin = user.BlockchainUser.UiLoginVerify()
+					fmt.Println(global.StatusLogin)
+					if global.StatusLogin == "error" {
+						return errors.New(fmt.Sprint("Account cannot login to the system"))
+					}
+					// create configuration
+					config := new(bdls.Config)
+					config.Epoch = time.Now()
+					config.CurrentHeight = 0
+					config.StateCompare = func(a bdls.State, b bdls.State) int { return bytes.Compare(a, b) }
+					config.StateValidate = func(bdls.State) bool { return true }
+					d := new(big.Int)
+					d, _ = d.SetString(global.D, 10)
+					priv := new(ecdsa.PrivateKey)
+					priv.PublicKey.Curve = bdls.S256Curve
+					priv.D = d
+					priv.PublicKey.X, priv.PublicKey.Y = bdls.S256Curve.ScalarBaseMult(priv.D.Bytes())
+					config.PrivateKey = priv
+					if err := startConsensus(c, config); err != nil {
+						return err
+					}
+					config.Participants = append(config.Participants, bdls.DefaultPubKeyToIdentity(&priv.PublicKey))
 					return nil
 				},
 			},
@@ -147,7 +211,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "peers",
 						Value: "./peers.json",
-						Usage: "all peers's ip:port list to connect, as a json array",
+						Usage: "all peers' ip:port list to connect, as a json array",
 					},
 				},
 				Action: func(c *cli.Context) error {

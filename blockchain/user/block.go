@@ -124,24 +124,28 @@ func (body *Block_Body_User) GetUserInfoMapRootHash() []byte {
 	return hash[:]
 }
 func CreateGenesisBlock() (*Block_Header_User, *Block_Body_User) {
-	//管理员信息
-	//公钥转字节数组
-	bytes, err := hex.DecodeString(global.Admin)
-	global.MyError(err)
-	userInfo := &common.InfoUser{nil,
-		bytes,
-		nil,
-		bytes,
-		[]byte("administer"),
+	//将所有管理员信息添加到用户信息、用户节点
+	for i := 0; i < len(global.Admin); i++ {
+		pubKey := global.Admin[i]
+		//公钥转字节数组
+		bytes, err := hex.DecodeString(pubKey)
+		global.MyError(err)
+		userInfo := &common.InfoUser{nil,
+			bytes,
+			nil,
+			bytes,
+			[]byte("administer"),
+		}
+		userInfo.SetInfoUserHash()
+		address := hex.EncodeToString(global.GetAddress(bytes))
+		//Global_UserInfos=InsertGlobalUserInfo(userInfo,Global_UserInfos)
+		common.Map_UserInfo[address] = userInfo
+		nodeUser := &common.NodeUser{nil, bytes, userInfo.Hash, nil}
+		nodeUser.SetNodeUserHash()
+		//加入新的用户节点
+		common.Map_NodeUser[address] = nodeUser
 	}
-	userInfo.SetInfoUserHash()
 
-	//Global_UserInfos=InsertGlobalUserInfo(userInfo,Global_UserInfos)
-	common.Map_UserInfo[global.AddressString] = userInfo
-	nodeUser := &common.NodeUser{nil, bytes, userInfo.Hash, nil}
-	nodeUser.SetNodeUserHash()
-	//加入新的用户节点
-	common.Map_NodeUser[global.AddressString] = nodeUser
 	header, body := NewBlock(1, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 	return header, body
 }

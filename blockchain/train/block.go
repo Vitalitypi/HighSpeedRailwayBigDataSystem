@@ -145,7 +145,7 @@ func NewBlock(height uint64, previousHash []byte) (*Block_Header_Train, *Block_B
 
 func CreateGenesisBlock() (*Block_Header_Train, *Block_Body_Train) {
 	//公钥转字节数组
-	bytes, err := hex.DecodeString(global.Admin)
+	bytes, err := hex.DecodeString(global.Admin[0])
 	global.MyError(err)
 
 	info := &common.InfoTrain{

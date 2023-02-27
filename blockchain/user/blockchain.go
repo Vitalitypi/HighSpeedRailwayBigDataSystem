@@ -1,7 +1,6 @@
 package user
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
@@ -320,22 +319,25 @@ func (blockchain *BlockChain_User) QueryUser(pubKey []byte) ([]byte, []byte, str
 	return rootHash, userInfoBytes, result
 }
 func (blockchain *BlockChain_User) UiLoginVerify() string {
-	admin, err := hex.DecodeString(global.Admin)
-	global.MyError(err)
+	//admin, err := hex.DecodeString(global.Admin[0])
+	//global.MyError(err)
 	ans := "error"
 	d := new(big.Int)
 	d, _ = d.SetString(global.D, 10)
 	x, y := bdls.S256Curve.ScalarBaseMult(d.Bytes())
 	public := append(x.Bytes(), y.Bytes()...)
-	if bytes.Compare(public, admin) == 0 {
-		return "admin"
-	}
-	err = blockchain.DB.View(func(tx *bolt.Tx) error {
+	addressBytes := global.GetAddress(public)
+	//if bytes.Compare(public, admin) == 0 {
+	//	return "admin"
+	//}
+	err := blockchain.DB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(global.TableName))
 		if b != nil {
-			//通过公钥字节数组获取用户节点
-			bytes := b.Get(public)
+			//通过公钥字节数组获取用户信息
+			bytes := b.Get(addressBytes)
 			if len(bytes) != 0 {
+				infoUser := common.DeserializeInfoUser(bytes)
+				fmt.Println(string(infoUser.UInfo))
 				ans = "user"
 			}
 		}
