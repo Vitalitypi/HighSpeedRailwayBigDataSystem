@@ -254,6 +254,7 @@ func main() {
 						// set validator sequence
 						config.Participants = append(config.Participants, bdls.DefaultPubKeyToIdentity(&priv.PublicKey))
 					}
+					fmt.Println(config.Participants)
 					if err := startConsensus(c, config); err != nil {
 						return err
 					}
