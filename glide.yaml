@@ -1,0 +1,51 @@
+package: HighSpeedRailwayBigDataSystem
+import:
+- package: github.com/bolt
+  version: v1.3.1
+  vcs: git
+- package: github.com/gogo/protobuf
+  version: v1.3.2
+  subpackages:
+  - gogoproto
+  - proto
+- package: github.com/urfave/cli
+  version: v3.0.0-alpha2
+  subpackages:
+  - v2
+- package: github.com/yonggewang/bdls
+  subpackages:
+  - agent-tcp
+  - application/server
+  - blockchain/common
+  - blockchain/train
+  - blockchain/user
+  - crypto/blake2b
+  - crypto/btcec
+  - global
+  - timer
+- package: golang.org/crypto/ripemd160
+  version: v0.0.0
+  vcs: git
+- package: golang.org/x/sys/cpu
+  version: v0.0.0
+  vcs: git
+- package: rlp
+  version: v0.0.0
+  vcs: git
+testImport:
+- package: code.cloudfoundry.org/bytefmt
+- package: github.com/btcsuite/btcd
+  version: v0.23.4
+  subpackages:
+  - btcec
+  - chaincfg/chainhash
+- package: github.com/davecgh/go-spew
+  version: v1.1.1
+  subpackages:
+  - spew
+- package: github.com/olekukonko/tablewriter
+  version: v0.0.5
+- package: github.com/stretchr/testify
+  version: v1.8.1
+  subpackages:
+  - assert
